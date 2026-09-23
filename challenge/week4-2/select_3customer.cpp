@@ -3,7 +3,7 @@
 using namespace std;
 
 int main() {
-    const int maxPeople = 3;    // 고객 수를 3명으로 고정
+    const int maxPeople = 3; // 고객 수를 3명으로 고정
 
     string names[maxPeople];
     int ages[maxPeople];

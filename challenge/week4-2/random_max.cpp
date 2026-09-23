@@ -12,7 +12,7 @@ int main() {
     for (int i = 0; i < numCell; i++) { //행    
         for (int j = 0; j < numCell; j++) { //열
 
-            numList[i][j] = rand() % 1000;    // 0~999 난수 저장
+            numList[i][j] = rand() % 1000; // 0~999 난수 저장
 
             cout << i << ", " << j << " : "
                  << numList[i][j] << endl;
