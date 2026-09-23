@@ -3,10 +3,7 @@
 using namespace std;
 
 int main() {
-    int maxPeople;
-
-    cout << "총 고객의 수를 입력하라: ";
-    cin >> maxPeople;
+    const int maxPeople = 3; // 고객 수를 3명으로 고정
 
     string names[maxPeople];
     int ages[maxPeople];
