@@ -5,9 +5,9 @@ using namespace std;
 int main(){
     string str;
     do{
-        cout << "문자열을 입력하시오: ";
+        cout << "문자열을 입력하세요: ";
         getline(cin, str);
-        cout << "사용자의_입력: " << str << '\n'; 
+        cout << "사용자의 입력: " << str << '\n'; 
     }
     while (str != "종료");
 return 0;
