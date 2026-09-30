@@ -33,7 +33,7 @@ void findRecommendedItems(int preferences[NUM_USERS][NUM_ITEMS]){
         cout << "사용자 " << (i + 1) << "에게 추천하는 항목: ";
         cout << (maxPreferenceIndex + 1) << endl;
     }
-    }
+}
 
 
 int main(){
