@@ -16,96 +16,96 @@ vector<vector<int>> map = {
 
 // 사용자 정의 함수
 bool checkXY(int user_x, int user_y, const vector<vector<int>>& map);
-void displayMap(const vector<vector<int>>& map, int user_x, int user_y);
+
+void displayMap(
+    const vector<vector<int>>& map,
+    int magician_x, int magician_y,
+    int warrior_x, int warrior_y
+);
+
 bool checkGoal(const vector<vector<int>>& map, int user_x, int user_y);
-void checkState(vector<vector<int>>& map, int user_x, int user_y, User& user);
-bool CheckUser(const User& user);
+
+void checkState(
+    vector<vector<int>>& map,
+    int user_x,
+    int user_y,
+    User& user
+);
+
+bool CheckUser(User user);
 
 int main()
 {
-    User* user = nullptr;
-    string jobName;
-    string jobInput;
+    // Magician과 Warrior 객체 생성
+    Magician magician;
+    Warrior warrior;
 
-    // 게임 시작 전 직업 선택
-    while (user == nullptr)
-    {
-        cout << "직업을 선택하세요 (1: Magician, 2: Warrior): ";
-        cin >> jobInput;
+    // 두 플레이어를 번갈아 사용
+    User* users[2] = { &magician, &warrior };
+    string playerNames[2] = { "Magician", "Warrior" };
 
-        if (jobInput == "1")
-        {
-            // Magician 객체를 User 포인터에 대입하며 업캐스팅
-            user = new Magician();
-            jobName = "Magician";
-        }
-        else if (jobInput == "2")
-        {
-            // Warrior 객체를 User 포인터에 대입하며 업캐스팅
-            user = new Warrior();
-            jobName = "Warrior";
-        }
-        else
-        {
-            cout << "잘못된 선택입니다. 1 또는 2를 입력하세요." << endl;
-        }
-    }
+    // 두 플레이어의 시작 위치
+    int user_x[2] = { 0, 0 };
+    int user_y[2] = { 0, 0 };
 
-    int user_x = 0;
-    int user_y = 0;
+    int currentTurn = 0;
 
     while (true)
     {
+        User& user = *users[currentTurn];
+        int& current_x = user_x[currentTurn];
+        int& current_y = user_y[currentTurn];
+
         string user_input;
         string moveMessage;
         bool isMove = false;
 
-        cout << "\n직업: " << jobName << endl;
-        cout << "현재 HP: " << user->GetHP() << endl;
+        cout << "\n현재 차례: " << playerNames[currentTurn] << endl;
+        cout << "현재 HP: " << user.GetHP() << endl;
         cout << "명령어를 입력하세요 (상, 하, 좌, 우, 지도, 정보, 종료): ";
         cin >> user_input;
 
-        // 입력에 따라 현재 사용자 위치 이동
+        // 방향 입력에 따라 현재 플레이어 위치 변경
         if (user_input == "상")
         {
-            user_y--;
+            current_y--;
             isMove = true;
             moveMessage = "위로 한 칸 올라갑니다.";
         }
         else if (user_input == "하")
         {
-            user_y++;
+            current_y++;
             isMove = true;
             moveMessage = "아래로 한 칸 내려갑니다.";
         }
         else if (user_input == "좌")
         {
-            user_x--;
+            current_x--;
             isMove = true;
             moveMessage = "왼쪽으로 이동합니다.";
         }
         else if (user_input == "우")
         {
-            user_x++;
+            current_x++;
             isMove = true;
             moveMessage = "오른쪽으로 이동합니다.";
         }
 
         if (isMove)
         {
-            // 맵 밖으로 나가면 위치를 되돌림
-            if (!checkXY(user_x, user_y, map))
+            // 맵 밖으로 나가면 위치를 되돌리고 같은 플레이어 차례 유지
+            if (!checkXY(current_x, current_y, map))
             {
                 cout << "맵을 벗어났습니다. 다시 입력해 주세요." << endl;
 
                 if (user_input == "상")
-                    user_y++;
+                    current_y++;
                 else if (user_input == "하")
-                    user_y--;
+                    current_y--;
                 else if (user_input == "좌")
-                    user_x++;
+                    current_x++;
                 else if (user_input == "우")
-                    user_x--;
+                    current_x--;
 
                 continue;
             }
@@ -113,42 +113,54 @@ int main()
             cout << moveMessage << endl;
 
             // 이동할 때마다 HP 1 감소
-            user->DecreaseHP(1);
+            user.DecreaseHP(1);
 
-            if (!CheckUser(*user))
+            if (!CheckUser(user))
             {
-                cout << "실패" << endl;
-                cout << "게임을 종료합니다." << endl;
+                cout << playerNames[currentTurn] << "의 HP가 0이 되었습니다." << endl;
+                cout << "실패. 게임을 종료합니다." << endl;
                 break;
             }
 
             // 도착한 칸의 아이템, 적, 포션 처리
-            checkState(map, user_x, user_y, *user);
+            checkState(map, current_x, current_y, user);
 
-            if (!CheckUser(*user))
+            if (!CheckUser(user))
             {
-                cout << "실패" << endl;
-                cout << "게임을 종료합니다." << endl;
+                cout << playerNames[currentTurn] << "의 HP가 0이 되었습니다." << endl;
+                cout << "실패. 게임을 종료합니다." << endl;
                 break;
             }
 
-            displayMap(map, user_x, user_y);
+            // 이동 후 두 플레이어가 있는 지도 출력
+            displayMap(
+                map,
+                user_x[0], user_y[0],
+                user_x[1], user_y[1]
+            );
 
-            if (checkGoal(map, user_x, user_y))
+            if (checkGoal(map, current_x, current_y))
             {
-                cout << "성공" << endl;
-                cout << "목적지에 도착했습니다." << endl;
+                cout << playerNames[currentTurn] << "가 목적지에 도착했습니다!" << endl;
+                cout << "성공. 게임을 종료합니다." << endl;
                 break;
             }
+
+            // 이동을 마치면 다음 플레이어 차례
+            currentTurn = 1 - currentTurn;
         }
         else if (user_input == "지도")
         {
-            displayMap(map, user_x, user_y);
+            displayMap(
+                map,
+                user_x[0], user_y[0],
+                user_x[1], user_y[1]
+            );
         }
         else if (user_input == "정보" || user_input == "info")
         {
             // User의 출력 연산자 중복 정의 사용
-            cout << *user << endl;
+            cout << user << endl;
         }
         else if (user_input == "종료")
         {
@@ -160,9 +172,6 @@ int main()
             cout << "잘못된 입력입니다. 다시 입력해 주세요." << endl;
         }
     }
-
-    // 파생 객체를 User 포인터로 삭제하므로 User에 가상 소멸자가 필요
-    delete user;
 
     return 0;
 }
@@ -183,8 +192,12 @@ bool checkXY(int user_x, int user_y, const vector<vector<int>>& map)
     return true;
 }
 
-// 지도와 사용자 위치 출력
-void displayMap(const vector<vector<int>>& map, int user_x, int user_y)
+// 지도와 두 플레이어의 위치 출력
+void displayMap(
+    const vector<vector<int>>& map,
+    int magician_x, int magician_y,
+    int warrior_x, int warrior_y
+)
 {
     cout << "\n===== 지도 =====" << endl;
 
@@ -192,9 +205,20 @@ void displayMap(const vector<vector<int>>& map, int user_x, int user_y)
     {
         for (int x = 0; x < static_cast<int>(map[y].size()); x++)
         {
-            if (x == user_x && y == user_y)
+            bool magicianHere = (x == magician_x && y == magician_y);
+            bool warriorHere = (x == warrior_x && y == warrior_y);
+
+            if (magicianHere && warriorHere)
             {
-                cout << " USER |";
+                cout << " BOTH |";
+            }
+            else if (magicianHere)
+            {
+                cout << " MAGE |";
+            }
+            else if (warriorHere)
+            {
+                cout << " WARR |";
             }
             else
             {
@@ -223,7 +247,8 @@ void displayMap(const vector<vector<int>>& map, int user_x, int user_y)
         cout << " -------------------------------- " << endl;
     }
 
-    cout << "현재 위치: (" << user_x << ", " << user_y << ")" << endl;
+    cout << "Magician 위치: (" << magician_x << ", " << magician_y << ")" << endl;
+    cout << "Warrior 위치: (" << warrior_x << ", " << warrior_y << ")" << endl;
 }
 
 // 현재 위치가 목적지인지 확인
@@ -233,7 +258,12 @@ bool checkGoal(const vector<vector<int>>& map, int user_x, int user_y)
 }
 
 // 현재 칸의 아이템, 적, 포션 처리
-void checkState(vector<vector<int>>& map, int user_x, int user_y, User& user)
+void checkState(
+    vector<vector<int>>& map,
+    int user_x,
+    int user_y,
+    User& user
+)
 {
     int posState = map[user_y][user_x];
 
@@ -250,11 +280,11 @@ void checkState(vector<vector<int>>& map, int user_x, int user_y, User& user)
     {
         cout << "적이 있습니다." << endl;
 
-        // 실제 객체가 Magician인지 Warrior인지에 따라 다른 함수가 실행됨
+        // Magician 또는 Warrior의 재정의된 doAttack() 호출
         user.doAttack();
 
         user.DecreaseHP(2);
-        cout << "적을 만나 HP가 2 감소했습니다." << endl;
+        cout << "적의 공격으로 HP가 2 감소했습니다." << endl;
     }
     else if (posState == 3)
     {
@@ -266,7 +296,7 @@ void checkState(vector<vector<int>>& map, int user_x, int user_y, User& user)
 }
 
 // HP가 0이면 false 반환
-bool CheckUser(const User& user)
+bool CheckUser(User user)
 {
     return user.GetHP() > 0;
 }
